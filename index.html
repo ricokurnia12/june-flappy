@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Talha - Flappy Bird Enhanced</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="https://i.ibb.co/M6KTWnf/pic.jpg" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-image: url("./GEMINI_PARTY.png"); /* Make sure this path is correct */
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        font-family: "Orbitron", sans-serif; /* Orbitron is used later, ensure it's loaded or Press Start 2P is the primary */
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        position: relative;
+      }
+
+      /* Initial screen container */
+      .initial-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer; /* Make it obvious it's clickable */
+        position: relative; /* For z-indexing if needed */
+        z-index: 10; /* Ensure it's above particles */
+      }
+
+      .retro-text {
+        position: relative; /* Changed from absolute for animation */
+        text-align: center;
+        animation: slideUpTitle 1.5s ease-out forwards;
+        opacity: 0; /* Start hidden for animation */
+        transform: translateY(100vh); /* Start from bottom */
+      }
+
+      .retro-text h1 {
+        font-family: "Press Start 2P", cursive;
+        font-size: 5rem; /* Adjusted for potentially smaller screens */
+        line-height: 1.3;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.2),
+          0 0 20px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.1);
+      }
+
+      @keyframes slideUpTitle {
+        0% {
+          opacity: 0;
+          transform: translateY(80vh); /* Start further down */
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* GEMINI - gradasi biru ke pink */
+      .gradient {
+        background: linear-gradient(to bottom, #00e5ff, #ec407a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* PARTY - gradasi kuning ke pink */
+      .party {
+        background: linear-gradient(to bottom,#f50057, #ffd000);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* Animated background particles */
+      .particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 0;
+      }
+
+      .particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        animation: float 8s infinite linear;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(100vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-100px) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      /* Game container */
+      .game-container {
+        position: relative;
+        z-index: 1;
+        /* Initially hidden, will be shown via JS */
+        /* display: none;  -- We'll control canvas display directly */
+      }
+
+      /* Enhanced canvas styling */
+      #myCanvas {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3),
+          0 0 100px rgba(255, 255, 255, 0.1),
+          inset 0 2px 0 rgba(255, 255, 255, 0.2);
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.1),
+          rgba(255, 255, 255, 0.05)
+        );
+        backdrop-filter: blur(15px);
+        position: relative;
+        animation: canvasGlow 4s ease-in-out infinite alternate;
+        /* cursor: pointer; -- cursor managed by game logic */
+        transition: transform 0.3s ease;
+        display: none; /* Initially hide the canvas */
+      }
+
+      #myCanvas:hover {
+        transform: scale(1.02);
+      }
+
+      @keyframes canvasGlow {
+        0% {
+          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3),
+            0 0 100px rgba(255, 255, 255, 0.1),
+            inset 0 2px 0 rgba(255, 255, 255, 0.2);
+        }
+        100% {
+          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4),
+            0 0 120px rgba(255, 255, 255, 0.2),
+            inset 0 2px 0 rgba(255, 255, 255, 0.3);
+        }
+      }
+
+      /* UI Overlay */
+      .ui-overlay {
+        position: absolute;
+        top: -4px;
+        left: -4px;
+        width: calc(100% + 8px);
+        height: calc(100% + 8px);
+        pointer-events: none;
+        z-index: 2;
+        border-radius: 20px;
+      }
+
+      .corner-decoration {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-radius: 8px;
+        animation: pulse 3s ease-in-out infinite;
+      }
+
+      .corner-decoration.top-left { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+      .corner-decoration.top-right { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+      .corner-decoration.bottom-left { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+      .corner-decoration.bottom-right { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.1); }
+      }
+
+      /* Game title overlay (within canvas game) */
+      .game-title {
+        position: absolute;
+        top: -60px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: "Pacifico", cursive;
+        font-size: 36px;
+        color: white;
+        text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        animation: titleFloat 3s ease-in-out infinite alternate;
+        z-index: 3;
+      }
+
+      @keyframes titleFloat {
+        0% { transform: translateX(-50%) translateY(0px); }
+        100% { transform: translateX(-50%) translateY(-5px); }
+      }
+
+      /* Loading/Status indicator */
+      .status-indicator {
+        position: absolute;
+        bottom: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+        animation: fadeInOut 2s ease-in-out infinite;
+        z-index: 3;
+        /* display: none; Initially hide, show with canvas */
+      }
+
+      @keyframes fadeInOut {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        .retro-text h1 {
+            font-size: 3rem; /* Smaller title for small screens */
+        }
+        #myCanvas {
+          width: 90vw;
+          height: auto; /* Maintain aspect ratio */
+          max-width: 600px; /* Max width for canvas */
+        }
+        .game-title { font-size: 28px; top: -50px; }
+      }
+       @media (max-width: 480px) {
+        .retro-text h1 {
+            font-size: 2.5rem; /* Even smaller */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="particles" id="particles"></div>
+
+    <div class="initial-screen" id="initialScreen">
+      <div class="retro-text">
+        <h1>
+          <span class="gradient">JUNI</span><br /><span class="party">PARTY</span>
+        </h1>
+      </div>
+    </div>
+
+    <div class="game-container" id="gameContainer">
+      <canvas id="myCanvas" width="620" height="480">
+          Your browser does not support the HTML5 canvas tag.
+      </canvas>
+
+      <div class="ui-overlay">
+        <div class="corner-decoration top-left"></div>
+        <div class="corner-decoration top-right"></div>
+        <div class="corner-decoration bottom-left"></div>
+        <div class="corner-decoration bottom-right"></div>
+      </div>
+
+      </div>
+
+    <script>
+      // Create animated particles
+      function createParticles() {
+        const particlesContainer = document.getElementById("particles");
+        if (!particlesContainer) return; // Guard if not found
+        for (let i = 0; i < 40; i++) {
+          const particle = document.createElement("div");
+          particle.className = "particle";
+          particle.style.left = Math.random() * 100 + "%";
+          particle.style.animationDelay = Math.random() * 8 + "s";
+          particle.style.animationDuration = Math.random() * 4 + 4 + "s";
+          particlesContainer.appendChild(particle);
+        }
+      }
+
+      // Update status indicator based on game mode (if you add statusText element back)
+      function updateStatusIndicator(mode) {
+        const statusElement = document.getElementById("statusText");
+        if (!statusElement) return; // Guard
+        switch (mode) {
+          case "character_select":
+            statusElement.textContent = "✨ Choose your hero! ✨";
+            break;
+          case "prestart":
+            statusElement.textContent = "🚀 Tap to start flying! 🚀";
+            break;
+          case "running":
+            statusElement.textContent = "🎮 Keep flying! 🎮";
+            break;
+          case "over":
+            statusElement.textContent = "💥 Game Over! Tap to retry 💥";
+            break;
+          default:
+            statusElement.textContent = "Ready to play";
+        }
+      }
+
+      createParticles(); // Initialize particles
+
+      // Game variables
+      var myCanvas; // Will be assigned after it's shown
+      var ctx;      // Will be assigned after it's shown
+      var FPS = 40;
+      var jump_amount = -10;
+      var max_fall_speed = +10;
+      var acceleration = 1;
+      var pipe_speed = -2;
+      var game_mode = "initial_screen"; // Initial state before canvas
+      var time_game_last_running;
+      var bottom_bar_offset = 0;
+      var pipes = [];
+      var bird;
+      var selected_bird_src = "";
+
+      // Placeholder image URLs for new characters - REPLACE THESE!
+      const CHAR3_IMG_URL = "./char3.png"; // e.g., "./skibidi.png"
+      const CHAR4_IMG_URL = "./char4.png"; // e.g., "./monster.png"
+
+
+      // Function to get mouse position
+      function get_mouse_pos(canvas, evt) {
+        if (!canvas) return { x: 0, y: 0 }; // Guard if canvas not ready
+        var rect = canvas.getBoundingClientRect();
+        var scaleX = canvas.width / rect.width;
+        var scaleY = canvas.height / rect.height;
+
+        if (evt.touches && evt.touches.length > 0) {
+          return {
+            x: (evt.touches[0].clientX - rect.left) * scaleX,
+            y: (evt.touches[0].clientY - rect.top) * scaleY,
+          };
+        } else if (evt.clientX !== undefined) {
+          return {
+            x: (evt.clientX - rect.left) * scaleX,
+            y: (evt.clientY - rect.top) * scaleY,
+          };
+        }
+        return { x: 0, y: 0 };
+      }
+
+      function is_inside(pos, rect) {
+        return (
+          pos.x > rect.x &&
+          pos.x < rect.x + rect.width &&
+          pos.y < rect.y + rect.height &&
+          pos.y > rect.y
+        );
+      }
+
+      function MySprite(img_url) {
+        this.x = 0;
+        this.y = 0;
+        this.visible = true;
+        this.velocity_x = 0;
+        this.velocity_y = 0;
+        this.MyImg = new Image();
+        this.MyImg.src = img_url || "";
+        this.angle = 0;
+        this.flipV = false;
+        this.flipH = false;
+        this.hovered = false;
+      }
+
+      MySprite.prototype.Do_Frame_Things = function () {
+        if (!ctx) return; // Guard if context not ready
+        ctx.save();
+        if (this.hovered && game_mode === "character_select") {
+          ctx.shadowColor = "#FFD700"; // Gold glow
+          ctx.shadowBlur = 20;
+        }
+        ctx.translate(
+          this.x + this.MyImg.width / 2,
+          this.y + this.MyImg.height / 2
+        );
+        ctx.rotate((this.angle * Math.PI) / 180);
+        if (this.flipV) ctx.scale(1, -1);
+        if (this.flipH) ctx.scale(-1, 1);
+        if (this.visible && this.MyImg.complete && this.MyImg.naturalHeight !== 0) // Check if image is loaded
+          ctx.drawImage(
+            this.MyImg,
+            -this.MyImg.width / 2,
+            -this.MyImg.height / 2
+          );
+        this.x = this.x + this.velocity_x;
+        this.y = this.y + this.velocity_y;
+        ctx.restore();
+      };
+
+      function ImagesTouching(thing1, thing2) {
+        if (!thing1 || !thing2 || !thing1.visible || !thing2.visible || !thing1.MyImg.complete || !thing2.MyImg.complete)
+          return false;
+        if (
+          thing1.x >= thing2.x + thing2.MyImg.width ||
+          thing1.x + thing1.MyImg.width <= thing2.x
+        )
+          return false;
+        if (
+          thing1.y >= thing2.y + thing2.MyImg.height ||
+          thing1.y + thing1.MyImg.height <= thing2.y
+        )
+          return false;
+        return true;
+      }
+
+      // Character sprites for selection - positions will be adjusted
+      var rico_char_select = new MySprite("./rico.png"); // Ensure this path is correct
+      var dara_char_select = new MySprite("./dara.png"); // Ensure this path is correct
+      var char3_select = new MySprite(CHAR3_IMG_URL);
+      var char4_select = new MySprite(CHAR4_IMG_URL);
+
+
+      function setup_game_canvas_and_listeners() {
+        myCanvas = document.getElementById("myCanvas");
+        if (!myCanvas) {
+            console.error("Canvas element not found!");
+            return;
+        }
+        ctx = myCanvas.getContext("2d");
+
+        // Position characters for selection (example: 2x2 grid)
+        // Canvas width 620, height 480
+        // Character image effective size (e.g. 60x60)
+        const charWidth = 60; // Assuming MyImg.width will be around this once loaded
+        const charHeight = 60; // Assuming MyImg.height
+        const spacingX = (myCanvas.width - (2 * charWidth)) / 3;
+        const spacingY = (myCanvas.height - (2 * charHeight) - 150) / 3; // Extra space for title and instructions
+
+        rico_char_select.x = spacingX;
+        rico_char_select.y = 150 + spacingY; // Start below title
+
+        dara_char_select.x = spacingX * 2 + charWidth;
+        dara_char_select.y = 150 + spacingY;
+
+        char3_select.x = spacingX;
+        char3_select.y = 150 + spacingY * 2 + charHeight;
+
+        char4_select.x = spacingX * 2 + charWidth;
+        char4_select.y = 150 + spacingY * 2 + charHeight;
+
+
+        // Mouse hover detection for character select
+        myCanvas.addEventListener("mousemove", function (e) {
+          if (game_mode !== "character_select") return;
+          if (!myCanvas) return;
+
+          var pos = get_mouse_pos(myCanvas, e);
+          // Assuming characters are roughly 60x60 for hit detection
+          var hit_char_width = rico_char_select.MyImg.width || 60;
+          var hit_char_height = rico_char_select.MyImg.height || 60;
+
+
+          var rico_rect = { x: rico_char_select.x, y: rico_char_select.y, width: hit_char_width, height: hit_char_height };
+          var dara_rect = { x: dara_char_select.x, y: dara_char_select.y, width: hit_char_width, height: hit_char_height };
+          var char3_rect = { x: char3_select.x, y: char3_select.y, width: hit_char_width, height: hit_char_height };
+          var char4_rect = { x: char4_select.x, y: char4_select.y, width: hit_char_width, height: hit_char_height };
+
+          rico_char_select.hovered = is_inside(pos, rico_rect);
+          dara_char_select.hovered = is_inside(pos, dara_rect);
+          char3_select.hovered = is_inside(pos, char3_rect);
+          char4_select.hovered = is_inside(pos, char4_rect);
+
+          myCanvas.style.cursor =
+            rico_char_select.hovered || dara_char_select.hovered || char3_select.hovered || char4_select.hovered
+              ? "pointer"
+              : "default";
+        });
+
+        // General game input listeners (add after canvas is shown)
+        // Using myCanvas for game-specific inputs to avoid conflict with initial screen click
+        myCanvas.addEventListener("touchstart", Got_Player_Input, { passive: false });
+        myCanvas.addEventListener("mousedown", Got_Player_Input);
+        // Keydown can be global if preferred, but for game actions, often tied to canvas focus
+        addEventListener("keydown", Got_Player_Input);
+
+        // Load pipe image and then start game loop
+        pipe_piece.onload = () => {
+            add_all_my_pipes(); // Add pipes once image is loaded
+            setInterval(Do_a_Frame, 1000 / FPS); // Start game loop
+        };
+        pipe_piece.src = "http://s2js.com/img/etc/flappypipe.png";
+        if (pipe_piece.complete) { // If already cached
+             add_all_my_pipes();
+             setInterval(Do_a_Frame, 1000 / FPS);
+        }
+
+
+        // Start with character selection
+        game_mode = "character_select";
+        updateStatusIndicator("character_select"); // If you re-add the statusText element
+      }
+
+
+      function setup_game(bird_src) {
+        selected_bird_src = bird_src;
+        bird = new MySprite(selected_bird_src);
+        bird.x = myCanvas.width / 3;
+        bird.y = myCanvas.height / 2;
+        reset_game_state(); // Renamed from reset_game to avoid confusion
+        game_mode = "prestart";
+        updateStatusIndicator("prestart");
+      }
+
+      function Got_Player_Input(MyEvent) {
+        if (!myCanvas) return; // Only process if canvas is active
+
+        switch (game_mode) {
+          case "character_select": {
+            var pos = get_mouse_pos(myCanvas, MyEvent);
+            // Assuming characters are roughly 60x60 for hit detection
+             var hit_char_width = rico_char_select.MyImg.width || 60;
+             var hit_char_height = rico_char_select.MyImg.height || 60;
+
+
+            var rico_rect = { x: rico_char_select.x, y: rico_char_select.y, width: hit_char_width, height: hit_char_height };
+            var dara_rect = { x: dara_char_select.x, y: dara_char_select.y, width: hit_char_width, height: hit_char_height };
+            var char3_rect = { x: char3_select.x, y: char3_select.y, width: hit_char_width, height: hit_char_height };
+            var char4_rect = { x: char4_select.x, y: char4_select.y, width: hit_char_width, height: hit_char_height };
+
+
+            if (is_inside(pos, rico_rect)) {
+              setup_game(rico_char_select.MyImg.src);
+            } else if (is_inside(pos, dara_rect)) {
+              setup_game(dara_char_select.MyImg.src);
+            } else if (is_inside(pos, char3_rect)) {
+              setup_game(char3_select.MyImg.src);
+            } else if (is_inside(pos, char4_rect)) {
+              setup_game(char4_select.MyImg.src);
+            }
+            break;
+          }
+          case "prestart": {
+            game_mode = "running";
+            updateStatusIndicator("running");
+            break;
+          }
+          case "running": {
+            if (bird) bird.velocity_y = jump_amount;
+            break;
+          }
+          case "over":
+            if (new Date() - time_game_last_running > 1000) {
+              reset_game_state();
+              game_mode = "running"; // Or "prestart" if you want the tap-to-start screen again
+              updateStatusIndicator("running");
+              break;
+            }
+        }
+        if (MyEvent.preventDefault) MyEvent.preventDefault(); // Prevent default actions like scrolling on touch
+      }
+
+
+      function make_bird_slow_and_fall() {
+        if (!bird) return;
+        if (bird.velocity_y < max_fall_speed) {
+          bird.velocity_y = bird.velocity_y + acceleration;
+        }
+        if (bird.y > myCanvas.height - bird.MyImg.height) {
+          bird.velocity_y = 0;
+          game_mode = "over";
+          updateStatusIndicator("over");
+        }
+        if (bird.y < 0 - bird.MyImg.height) { // Bird went off top
+          // game_mode = "over"; // Could also make this game over
+          // updateStatusIndicator("over");
+           bird.y = 0 - bird.MyImg.height; // Stop at top edge if not game over
+           bird.velocity_y = 0; // Or a slight bounce
+        }
+      }
+
+      function add_pipe(x_pos, top_of_gap, gap_width) {
+        var top_pipe = new MySprite();
+        top_pipe.MyImg = pipe_piece; // pipe_piece is global Image object
+        top_pipe.x = x_pos;
+        top_pipe.y = top_of_gap - pipe_piece.height;
+        top_pipe.velocity_x = pipe_speed;
+        pipes.push(top_pipe);
+
+        var bottom_pipe = new MySprite();
+        bottom_pipe.MyImg = pipe_piece;
+        bottom_pipe.flipV = true;
+        bottom_pipe.x = x_pos;
+        bottom_pipe.y = top_of_gap + gap_width;
+        bottom_pipe.velocity_x = pipe_speed;
+        pipes.push(bottom_pipe);
+      }
+
+      function make_bird_tilt_appropriately() {
+        if (!bird) return;
+        if (bird.velocity_y < 0) {
+          bird.angle = -15;
+        } else if (bird.angle < 70) {
+          bird.angle = bird.angle + 4;
+        }
+      }
+
+      function show_the_pipes() {
+        for (var i = 0; i < pipes.length; i++) {
+          pipes[i].Do_Frame_Things();
+        }
+      }
+
+      function check_for_end_game() {
+        if (!bird) return;
+        for (var i = 0; i <100; i++)
+          if (ImagesTouching(bird, pipes[i])) {
+            game_mode = "over";
+            updateStatusIndicator("over");
+          }
+      }
+
+      function display_intro_instructions() {
+        if (!ctx) return;
+        ctx.save();
+        ctx.font = "20px Orbitron"; // Slightly smaller
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.textAlign = "center";
+        ctx.strokeText(
+          "Tap or Click to Fly!",
+          myCanvas.width / 2,
+          myCanvas.height / 3 // Moved up a bit
+        );
+        ctx.fillText(
+          "Tap or Click to Fly!",
+          myCanvas.width / 2,
+          myCanvas.height / 3
+        );
+        ctx.restore();
+      }
+
+      function display_game_over() {
+        if (!ctx || !bird) return;
+        var score = 0;
+        for (var i = 0; i < pipes.length; i++)
+          if (pipes[i].x < bird.x) score = score + 0.5;
+
+        ctx.save();
+        ctx.font = "bold 36px Orbitron";
+        ctx.fillStyle = "#ff4444";
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 3;
+        ctx.textAlign = "center";
+        ctx.strokeText("Game Over", myCanvas.width / 2, 100);
+        ctx.fillText("Game Over", myCanvas.width / 2, 100);
+
+        ctx.font = "28px Orbitron";
+        ctx.fillStyle = "#ffdd44";
+        ctx.shadowColor = "#ffdd44";
+        ctx.shadowBlur = 10;
+        ctx.strokeText("Score: " + Math.floor(score), myCanvas.width / 2, 150); // Floor score
+        ctx.fillText("Score: " + Math.floor(score), myCanvas.width / 2, 150);
+
+        ctx.font = "18px Orbitron";
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowColor = "transparent"; // Reset shadow for this text
+        ctx.shadowBlur = 0;
+        ctx.strokeText(
+          "Click or Tap to Play Again",
+          myCanvas.width / 2,
+          myCanvas.height - 100 // Positioned lower
+        );
+        ctx.fillText(
+          "Click or Tap to Play Again",
+          myCanvas.width / 2,
+          myCanvas.height - 100
+        );
+        ctx.restore();
+      }
+
+      function display_bar_running_along_bottom() {
+        if (!ctx || !bottom_bar.complete || bottom_bar.naturalHeight === 0) return;
+        if (bottom_bar_offset < -23) bottom_bar_offset = 0; // Assuming bottom_bar width is > 23
+        ctx.drawImage(
+          bottom_bar,
+          bottom_bar_offset,
+          myCanvas.height - bottom_bar.height
+        );
+      }
+
+      function display_character_select() {
+        if (!ctx) return;
+        ctx.save();
+
+        var titleGradient = ctx.createLinearGradient(0, 0, 0, 120); // Adjust gradient y-coords if needed
+        titleGradient.addColorStop(0, "#ffffff");
+        titleGradient.addColorStop(1, "#cccccc");
+
+        ctx.font = "bold 30px Pacifico"; // Using Pacifico as per original style
+        ctx.fillStyle = titleGradient;
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.textAlign = "center";
+        ctx.shadowColor = "rgba(0,0,0,0.5)";
+        ctx.shadowBlur = 10;
+        ctx.strokeText("Choose Your Character!", myCanvas.width / 2, 80); // Y pos adjusted
+        ctx.fillText("Choose Your Character!", myCanvas.width / 2, 80);
+        ctx.restore(); // Restore before drawing characters to avoid them inheriting shadow/gradient
+
+        // Draw character sprites
+        rico_char_select.Do_Frame_Things();
+        dara_char_select.Do_Frame_Things();
+        char3_select.Do_Frame_Things();
+        char4_select.Do_Frame_Things();
+
+        ctx.save();
+        ctx.font = "bold 18px Orbitron"; // Smaller font for names
+        ctx.textAlign = "center";
+
+        // Helper to draw character names
+        function draw_char_name(character, name, defaultColor) {
+            var char_img_width = character.MyImg.width || 60; // Use actual or default
+            var char_img_height = character.MyImg.height || 60;
+            if (character.hovered) {
+                ctx.fillStyle = "#FFD700"; // Gold
+                ctx.shadowColor = "#FFD700";
+                ctx.shadowBlur = 15;
+            } else {
+                ctx.fillStyle = defaultColor;
+                ctx.shadowColor = "rgba(0,0,0,0.3)";
+                ctx.shadowBlur = 5;
+            }
+            ctx.fillText(
+                name,
+                character.x + char_img_width / 2,
+                character.y + char_img_height + 25 // Adjusted spacing for name
+            );
+            ctx.shadowColor = "transparent"; // Reset shadow for next element
+            ctx.shadowBlur = 0;
+        }
+
+        draw_char_name(rico_char_select, "Rico", "#4CAF50"); // Green
+        draw_char_name(dara_char_select, "Dara", "#2196F3"); // Blue
+        draw_char_name(char3_select, "Jett", "#FF9800");   // Orange - Placeholder name
+        draw_char_name(char4_select, "Spike", "#9C27B0");  // Purple - Placeholder name
+
+
+        ctx.font = "16px Orbitron";
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.shadowColor = "rgba(0,0,0,0.3)";
+        ctx.shadowBlur = 3;
+        ctx.fillText(
+          "Click on a character to select",
+          myCanvas.width / 2,
+          myCanvas.height - 30 // Adjusted position
+        );
+        ctx.restore();
+      }
+
+      function reset_game_state() { // Renamed from reset_game
+        if (bird) {
+          bird.y = myCanvas.height / 2;
+          bird.angle = 0;
+          bird.velocity_y = 0; // Reset velocity too
+        }
+        pipes = []; // Clear existing pipes
+        add_all_my_pipes(); // Re-add pipes for new game
+      }
+
+      function add_all_my_pipes() {
+        pipes = []; // Clear previous pipes just in case
+        add_pipe(500, 100, 140);
+        add_pipe(800, 50, 140);
+        add_pipe(1000, 250, 140);
+        add_pipe(1200, 150, 120);
+        add_pipe(1600, 100, 120);
+        add_pipe(1800, 150, 120);
+         add_pipe(500, 100, 140);   // Pipa 1
+    add_pipe(800, 50, 140);    // Pipa 2
+    add_pipe(1000, 250, 140);  // Pipa 3
+    add_pipe(1200, 150, 120);  // Pipa 4
+    add_pipe(1600, 100, 120);  // Pipa 5
+    add_pipe(1800, 150, 120);  // Pipa 6
+     add_pipe(500, 100, 140);   // Pipa 1
+    add_pipe(800, 50, 140);    // Pipa 2
+    add_pipe(1000, 250, 140);  // Pipa 3
+    add_pipe(1200, 150, 120);  // Pipa 4
+    add_pipe(1600, 100, 120);  // Pipa 5
+    add_pipe(1800, 150, 120);  // Pipa 6
+        // ... (add more pipes if you want a longer game)
+        var finish_line = new MySprite("http://s2js.com/img/etc/flappyend.png");
+        finish_line.x = 2200; // Adjusted for fewer pipes, or add more pipes
+        finish_line.velocity_x = pipe_speed;
+        pipes.push(finish_line);
+      }
+
+      var pipe_piece = new Image();
+      // pipe_piece.onload is now set in setup_game_canvas_and_listeners
+
+      var bottom_bar = new Image();
+      bottom_bar.src = "http://s2js.com/img/etc/flappybottom.png";
+
+
+      function Do_a_Frame() {
+        if (!ctx || !myCanvas) return; // Don't draw if canvas isn't ready
+
+        // Clear or set background
+        if (game_mode === "character_select") {
+          var gradient = ctx.createLinearGradient(0, 0, 0, myCanvas.height);
+          gradient.addColorStop(0, "rgba(102, 126, 234, 0.3)"); // Light blueish
+          gradient.addColorStop(1, "rgba(118, 75, 162, 0.3)");  // Light purpleish
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, myCanvas.width, myCanvas.height);
+        } else {
+          ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+        }
+
+        switch (game_mode) {
+          case "character_select": {
+            display_character_select();
+            display_bar_running_along_bottom(); // Optional for char select screen
+            break;
+          }
+          case "prestart": {
+            display_bar_running_along_bottom();
+            show_the_pipes();
+            if (bird) bird.Do_Frame_Things();
+            display_intro_instructions();
+            break;
+          }
+          case "running": {
+            time_game_last_running = new Date();
+            bottom_bar_offset = bottom_bar_offset + pipe_speed;
+            display_bar_running_along_bottom();
+            show_the_pipes();
+            make_bird_tilt_appropriately();
+            make_bird_slow_and_fall();
+            check_for_end_game();
+            if (bird) bird.Do_Frame_Things();
+            break;
+          }
+          case "over": {
+            display_bar_running_along_bottom();
+            show_the_pipes(); // Show pipes in their final positions
+            make_bird_slow_and_fall(); // Bird might still be falling
+            if (bird) bird.Do_Frame_Things();
+            display_game_over();
+            break;
+          }
+        }
+      }
+
+      // Event listener for the initial screen
+      document.getElementById("initialScreen").addEventListener("click", function() {
+        // Hide initial screen
+        this.style.display = "none";
+
+        // Show game container and canvas
+        const gameContainer = document.getElementById("gameContainer");
+        myCanvas = document.getElementById("myCanvas"); // Get canvas element now
+        if (gameContainer) gameContainer.style.display = "block"; // Or flex, depending on needs
+        if (myCanvas) myCanvas.style.display = "block";
+
+
+        // Initialize game elements that depend on canvas
+        setup_game_canvas_and_listeners();
+      });
+
+      // Initial game mode is 'initial_screen', game loop starts after click
+      // updateStatusIndicator("character_select"); // Call this inside setup_game_canvas_and_listeners
+    </script>
+  </body>
+</html>
