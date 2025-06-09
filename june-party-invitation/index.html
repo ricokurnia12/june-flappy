@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>June-Party</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- <link rel="icon" href="https://i.ibb.co/M6KTWnf/pic.jpg" /> -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Orbitron:wght@400;700;900&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        body {
+            margin: 0;
+            scrollbar-width: none;
+            padding: 0;
+            background-image: url("./GEMINI_PARTY.png");
+            /* Make sure this path is correct */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            font-family: "Orbitron", sans-serif;
+            /* Orbitron is used later, ensure it's loaded or Press Start 2P is the primary */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* min-width: 1000px; */
+            /* IE 10+ */
+        }
+
+        /* Scrollbar container */
+        ::-webkit-scrollbar {
+            width: 0px;
+            /* lebar scrollbar vertikal */
+            height: 0px;
+            /* tinggi scrollbar horizontal */
+        }
+
+        /* Track (background scroll area) */
+        ::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 6px;
+        }
+
+        /* Thumb (bagian yang digeser) */
+        ::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 6px;
+            border: 0px solid #f0f0f0;
+            /* kasih jarak antara thumb dan track */
+        }
+
+        /* Thumb hover */
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #555;
+        }
+
+        .invitation-card {
+            background: rgba(0, 0, 0, 0.85);
+            border: 3px solid #ff006e;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            /* overflow: hidden; */
+            box-shadow:
+                0 0 50px rgba(255, 0, 110, 0.5),
+                inset 0 0 50px rgba(255, 255, 255, 0.1);
+            animation: cardGlow 3s ease-in-out infinite alternate;
+        }
+
+        /* Initial screen container */
+        .initial-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            /* Make it obvious it's clickable */
+            position: relative;
+            /* For z-indexing if needed */
+            z-index: 10;
+            /* Ensure it's above particles */
+        }
+
+        .initial-screen.hidden {
+            opacity: 0;
+            transform: scale(0.8) rotateY(90deg);
+            pointer-events: none;
+        }
+
+        .retro-text {
+            position: relative;
+            /* Changed from absolute for animation */
+            text-align: center;
+            animation: slideUpTitle 1.5s ease-out forwards;
+            opacity: 0;
+            /* Start hidden for animation */
+            transform: translateY(100vh);
+            /* Start from bottom */
+        }
+
+        .retro-text h1 {
+            font-family: "Press Start 2P", cursive;
+            font-size: 5rem;
+            /* Adjusted for potentially smaller screens */
+            line-height: 1.3;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2),
+                0 0 20px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .retro-text h2 {
+            font-family: "Press Start 2P", cursive;
+            font-size: 1rem;
+            /* Adjusted for potentially smaller screens */
+            line-height: 1.3;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2),
+                0 0 20px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .retro-text h4 {
+            font-family: "Press Start 2P", cursive;
+            font-size: 3rem;
+            /* Adjusted for potentially smaller screens */
+            line-height: 1.3;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2),
+                0 0 20px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes slideUpTitle {
+            0% {
+                opacity: 0;
+                transform: translateY(80vh);
+                /* Start further down */
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* GEMINI - gradasi biru ke pink */
+        .gradient {
+            background: linear-gradient(to bottom, #00e5ff, #ec407a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* PARTY - gradasi kuning ke pink */
+        .party {
+            background: linear-gradient(to bottom, #f50057, #ffd000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 8s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Game container */
+        .game-container {
+            position: relative;
+            z-index: 1;
+            /* Initially hidden, will be shown via JS */
+            /* display: none;  -- We'll control canvas display directly */
+        }
+
+        /* Enhanced canvas styling */
+        #myCanvas {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3),
+                0 0 100px rgba(255, 255, 255, 0.1),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2);
+            background: linear-gradient(145deg,
+                    rgba(255, 255, 255, 0.1),
+                    rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(15px);
+            position: relative;
+            animation: canvasGlow 4s ease-in-out infinite alternate;
+            /* cursor: pointer; -- cursor managed by game logic */
+            transition: transform 0.3s ease;
+            display: none;
+            /* Initially hide the canvas */
+        }
+
+        #myCanvas:hover {
+            transform: scale(1.02);
+        }
+
+        @keyframes canvasGlow {
+            0% {
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3),
+                    0 0 100px rgba(255, 255, 255, 0.1),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+            }
+
+            100% {
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4),
+                    0 0 120px rgba(255, 255, 255, 0.2),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        /* UI Overlay */
+        .ui-overlay {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: calc(100% + 8px);
+            height: calc(100% + 8px);
+            pointer-events: none;
+            z-index: 2;
+            border-radius: 20px;
+        }
+
+        .corner-decoration {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .corner-decoration.top-left {
+            top: 15px;
+            left: 15px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .corner-decoration.top-right {
+            top: 15px;
+            right: 15px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .corner-decoration.bottom-left {
+            bottom: 15px;
+            left: 15px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .corner-decoration.bottom-right {
+            bottom: 15px;
+            right: 15px;
+            border-left: none;
+            border-top: none;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
+        }
+
+        /* Game title overlay (within canvas game) */
+        .game-title {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: "Pacifico", cursive;
+            font-size: 36px;
+            color: white;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            animation: titleFloat 3s ease-in-out infinite alternate;
+            z-index: 3;
+        }
+
+        @keyframes titleFloat {
+            0% {
+                transform: translateX(-50%) translateY(0px);
+            }
+
+            100% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+
+        /* Loading/Status indicator */
+        .status-indicator {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            animation: fadeInOut 2s ease-in-out infinite;
+            z-index: 3;
+            /* display: none; Initially hide, show with canvas */
+        }
+
+        @keyframes fadeInOut {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .invitation-card::before {
+            content: '';
+            position: absolute;
+            overflow: hidden;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shine 4s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        /* @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+
+            50% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+        } */
+
+        .invitation-content {
+            position: relative;
+            height: fit-content;
+            z-index: 2;
+        }
+
+        .greeting {
+            font-size: 2rem;
+            color: #ff006e;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 0, 110, 0.7);
+            animation: textGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes textGlow {
+            0% {
+                text-shadow: 0 0 20px rgba(255, 0, 110, 0.7);
+            }
+
+            100% {
+                text-shadow: 0 0 30px rgba(255, 0, 110, 1);
+            }
+        }
+
+        .invitation-text {
+            font-size: 0.8rem;
+            line-height: 2;
+            color: #ffffff;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .details {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #3a86ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 0.7rem;
+            color: #ffffff;
+        }
+
+        .detail-label {
+            color: #06ffa5;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(6, 255, 165, 0.5);
+        }
+
+        .detail-value {
+            color: #ffffff;
+            text-align: right;
+            flex: 1;
+            margin-left: 20px;
+        }
+
+        .secret-agenda {
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 0;
+            border: 2px solid #ffd000;
+            animation: secretPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes secretPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(255, 208, 0, 0.5);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 40px rgba(255, 208, 0, 0.8);
+            }
+        }
+
+        .secret-text {
+            font-size: 0.8rem;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: textShimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes textShimmer {
+
+            0%,
+            100% {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+
+            50% {
+                text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        .menu-note {
+            font-size: 0.7rem;
+            color: #06ffa5;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(6, 255, 165, 0.1);
+            border-radius: 10px;
+            border: 1px solid #06ffa5;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid #ffffff;
+            border-radius: 10px;
+            padding: 10px 20px;
+            color: #ffffff;
+            font-family: "Press Start 2P", cursive;
+            font-size: 0.6rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 25;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Invitation Screen */
+        .invitation-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .invitation-screen.show {
+            display: flex;
+            animation: slideInInvitation 1s ease-out forwards;
+        }
+
+        .june-member {
+            margin-top: -40px;
+            margin-bottom: 20px;
+        }
+
+        .june-member img {
+            width: 98px;
+            height: 70px;
+            /* border-radius: 50%; */
+            margin: 0 5px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 1024px) {
+            body {
+                min-width: 100%;
+                padding: 20px;
+            }
+
+            .invitation-card {
+                padding: 30px;
+                max-width: 100%;
+                max-height: 95vh;
+                font-size: 0.9rem;
+            }
+
+            .retro-text h1 {
+                font-size: 3rem;
+            }
+
+            .retro-text h4 {
+                font-size: 2rem;
+            }
+
+            .retro-text h2 {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .june-member {
+                margin-top: -20px;
+                margin-bottom: 20px;
+            }
+
+            .invitation-card {
+                padding: 20px;
+            }
+
+            .retro-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .retro-text h4 {
+                font-size: 1.5rem;
+            }
+
+            .retro-text h2 {
+                font-size: 0.8rem;
+            }
+
+            .greeting {
+                font-size: 1.5rem;
+            }
+
+            .invitation-text,
+            .secret-text {
+                font-size: 0.75rem;
+            }
+
+            .detail-item {
+                flex-direction: column;
+                align-items: flex-start;
+                font-size: 0.8rem;
+            }
+
+            .detail-value {
+                text-align: left;
+                margin-left: 0;
+                margin-top: 5px;
+            }
+
+            .game-title {
+                font-size: 24px;
+                top: -40px;
+            }
+
+            .status-indicator {
+                font-size: 12px;
+                bottom: -30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .invitation-card {
+                padding: 15px;
+                border-width: 2px;
+            }
+
+            .retro-text h1 {
+                font-size: 1.8rem;
+            }
+
+            .retro-text h4 {
+                font-size: 1.2rem;
+            }
+
+            .retro-text h2 {
+                font-size: 0.7rem;
+            }
+
+            .greeting {
+                font-size: 1.2rem;
+            }
+
+            .menu-note {
+                font-size: 0.65rem;
+            }
+
+            .secret-agenda {
+                padding: 15px;
+            }
+
+            .back-btn {
+                top: 10px;
+                left: 10px;
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="initial-screen" id="initialScreen">
+        <div class="retro-text">
+            <h1>
+                <span class="gradient">JUNI</span><br /><span class="party">PARTY</span>
+            </h1>
+
+            <h3 style="color: #303030;">Click to open the party</h3>
+        </div>
+    </div>
+
+    <div class="invitation-screen hide-scrollbar " id="invitationScreen">
+        <!-- <button class="back-btn" onclick="goBack()">← BACK</button> -->
+
+        <div class="invitation-card retro-text">
+            <audio id="backgroundMusic" loop>
+                <source src="./havefungomad-loop.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <div class="invitation-content retro-text">
+                <h4 class=" gradient">Halo bessssstttt!</h4>
+                <div class="june-member">
+                    <img src="./dara.png" />
+                    <img src="./rico.png" />
+                    <img src="./yadi.png" />
+                    <img src="./alin.png" />
+
+                </div>
+                <div class="invitation-text">
+                    Dalam rangka merayakan kami yang berulang tahun di bulan Juni,<br>
+                    kami mau mengundang bestt ke acara yang akan dilaksanakan di:
+                </div>
+
+                <div class="details">
+                    <div class="detail-item">
+                        <span class="detail-label">📍 TEMPAT:</span>
+                        <span class="detail-value">Sky Steak & Pasta Cihampelas</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📅 HARI & TANGGAL:</span>
+                        <span class="detail-value">Rabu, 11 Juni 2025</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">⏰ JAM:</span>
+                        <span class="detail-value">After work</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">👗 DRESSCODE:</span>
+                        <span class="detail-value">shades of blue</span>
+                    </div>
+                </div>
+                <div class="details  retro-text">
+                    <h2 class="greeting">🎉 Menu List 🎉</h2>
+                    <ul class="invitation-text" style="list-style: none; padding: 0; text-align: left;">
+                        <li>🍗 Chicken Crispy + Drink</li>
+                        <li>🍽️ Chicken Steak + Drink</li>
+                        <li>🍛 Chicken Katsu + Drink</li>
+                        <li>🧄 Chicken Garlic Butter Rice + Drink</li>
+                        <li>🍝 Pasta Creamy Gochujang + Drink (Penne/Spaghetti)</li>
+                    </ul>
+
+                    <h2 class="greeting" style="margin-top: 30px;">🍚 Choose Your Carbo</h2>
+                    <ul class="invitation-text" style="list-style: none; padding: 0; text-align: left;">
+                        <li>• Rice</li>
+                        <li>• Potato Wedges (for Chicken Crispy, Steak, and Katsu only)</li>
+                    </ul>
+
+                    <h2 class="greeting" style="margin-top: 30px;">🧂 Choose Your Sauce</h2>
+                    <ul class="invitation-text" style="list-style: none; padding: 0; text-align: left;">
+                        <li>• Blackpepper Sauce</li>
+                        <li>• Barbeque Sauce</li>
+                    </ul>
+
+                    <h2 class="greeting" style="margin-top: 30px;">🥤 Choose Your Drink</h2>
+                    <ul class="invitation-text" style="list-style: none; padding: 0; text-align: left;">
+                        <li>• Ice Tea</li>
+                        <li>• Lemon Tea</li>
+                        <li>• Nipis Madu</li>
+                    </ul>
+                </div>
+
+                <div class="secret-agenda">
+                    <div class="secret-text">
+                        🎉 Nahhh siapkan stamina terbaikmu karena ada<br>
+                        <strong>SECRET AGENDA</strong> yang akan digelar<br>
+                        dan dapatkan hadiah fantastisnyaaaahhhh! 🎁
+                    </div>
+                </div>
+
+                <!-- <div class="menu-note">
+                    <strong>BETEWE</strong>, nanti ada menu makanan yang kami lampirkan,<br>
+                    dipilih eaaa 🤗
+                </div> -->
+            </div>
+        </div>
+        <script>
+
+            // Create animated particles
+            function createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                const particleCount = 50;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 8 + 's';
+                    particle.style.animationDuration = (Math.random() * 8 + 4) + 's';
+                    particlesContainer.appendChild(particle);
+                }
+            }
+
+            // Handle click to show invitation
+            document.getElementById('initialScreen').addEventListener('click', function () {
+                const initialScreen = document.getElementById('initialScreen');
+                const invitationScreen = document.getElementById('invitationScreen');
+
+                initialScreen.classList.add('hidden');
+
+                setTimeout(() => {
+                    initialScreen.style.display = 'none';
+                    invitationScreen.classList.add('show');
+                }, 800);
+            });
+
+            // Go back function
+            function goBack() {
+                const initialScreen = document.getElementById('initialScreen');
+                const invitationScreen = document.getElementById('invitationScreen');
+
+                invitationScreen.classList.remove('show');
+
+                setTimeout(() => {
+                    invitationScreen.style.display = 'none';
+                    initialScreen.style.display = 'flex';
+                    initialScreen.classList.remove('hidden');
+                }, 500);
+            }
+
+            // Initialize particles when page loads
+            window.addEventListener('load', createParticles);
+            document.getElementById('initialScreen').addEventListener('click', function () {
+                // ... (your existing code for screen transitions) ...
+                const backgroundMusic = document.getElementById('backgroundMusic');
+
+                backgroundMusic.play().catch(error => {
+                    console.log("Autoplay prevented:", error);
+                    // Handle autoplay prevention, e.g., show a play button
+                });
+            });
+        </script>
+
+</body>
+
+</html>
